@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Sale</string>
+    <string name="action_settings">Settings</string>
+    
+    <string name="price_text_view">Price</string>
+    <string name="price_edit_text">0.0</string>
+
+    <string name="discount_text_view">Discount</string>
+    <string name="discount_edit_text">.15</string>
+
+    <string name="final_text_view">Final Price</string>
+    <string name="final_price_edit_text">0.15</string>
+        
+    <string name="change_discount_text_view">Discount</string>
+
+</resources>

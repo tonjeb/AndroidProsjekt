@@ -4,15 +4,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-
-
 
 public class MainActivity extends Activity {
 	
@@ -28,110 +30,79 @@ public class MainActivity extends Activity {
 	EditText discountAmountET;
 	EditText finalPriceET;
 	
-
 	SeekBar discountSeekBar;
+	TextView netError;
 
-	ConnectivityManager connMgr = (ConnectivityManager)
-			getSystemService(Context.CONNECTIVITY_SERVICE);
-	NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();{
-	if (networkInfo != null && networkInfo.isConnected()) {
-	
-		//return true;	
-		
-		
-	} else {
-		
-		textView.setText("No network connection available.");
-		
-	
-	}
-	
-	};	
+	ConnectivityManager connMgr; 
+	NetworkInfo networkInfo; 	
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.activity_main);
 		
-		if(savedInstanceState == null ){
-			
+		
+		if(savedInstanceState == null ) {
 			priceBeforeDiscount = 0.0;
 			discountAmount = .15;
 			finalPrice = 0.0;
-			
 		} else {
-			
 			priceBeforeDiscount = savedInstanceState.getDouble(PRICE_WITHOUT_DISCOUNT);
 			discountAmount = savedInstanceState.getDouble(CURRENT_DISCOUNT);
 			finalPrice = savedInstanceState.getDouble(TOTAL_PRICE);
-			
 		}
 		
 		priceBeforeDiscountET = (EditText) findViewById(R.id.priceEditText);
 		discountAmountET = (EditText) findViewById(R.id.discountEditText);
 		finalPriceET = (EditText) findViewById(R.id.finalEditText);
 		
-		discountSeekBar = (SeekBar) findViewById(R.id.discountEditText);
 		
-		discountSeekBarChangeListener(discountSeekBarListener);
-		
+		discountSeekBar = (SeekBar) findViewById(R.id.discountSeekBar);
+		discountSeekBar.setOnSeekBarChangeListener(discountSeekBarListener);
 		priceBeforeDiscountET.addTextChangedListener(priceBeforeDiscountListener);
+		
+		if(!isOnline()) {
+			String onlineErr = "You are not connected to the Internet. Some features are disabled!";
+			AlertDialog.Builder alert = new AlertDialog.Builder(this);
+			alert.setMessage(onlineErr).create().show();
+		}	
 		
 	}
 	
-	private void discountSeekBarChangeListener(
-			OnSeekBarChangeListener discountSeekBarListener2) {
-		// TODO Auto-generated method stub
-		
+	private Boolean isOnline() {
+		ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+		return (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected());
+
 	}
 
+	private void updateDiscountAndFinalPrice(){
+		double discountAmount = Double.parseDouble(discountAmountET.getText().toString());
+		double finalPrice = priceBeforeDiscount - (priceBeforeDiscount * discountAmount);		
+		
+		finalPriceET.setText(String.format("%.02f", finalPrice));	
+	}
+	
 	private TextWatcher priceBeforeDiscountListener = new TextWatcher(){
 
 		@Override
-		public void afterTextChanged(Editable arg0) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void afterTextChanged(Editable arg0) {}
 
 		@Override
-		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-				int arg3) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {}
 
 		@Override
-		public void onTextChanged(CharSequence arg0, int arg1, int arg2,
-				int arg3) {
-			
+		public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {			
 			try {
-				
 				priceBeforeDiscount = Double.parseDouble(arg0.toString());
-				
 			}
-			
-			catch(NumberFormatException e){
-				
+			catch(NumberFormatException e){	
 				priceBeforeDiscount = 0.0;
 			}
 			
-			updateDiscountAndFinalPrice();
-			
-		}
-		
-		
+			updateDiscountAndFinalPrice();			
+		}				
 	};
-	
-	private void updateDiscountAndFinalPrice(){
-		
-		double discountAmount = Double.parseDouble(discountAmountET.getText().toString());
-		
-		double finalPrice = priceBeforeDiscount + (priceBeforeDiscount / discountAmount);
-		
-		finalPriceET.setText(String.format("%.02f", finalPrice));
-		
-	}
 	
 	protected void onSaveInstanceState(Bundle outState){
 		
@@ -143,33 +114,21 @@ public class MainActivity extends Activity {
 		
 	}
 	
-	private OnSeekBarChangeListener discountSeekBarListener = new OnSeekBarChangeListener(){
+	private OnSeekBarChangeListener discountSeekBarListener = new OnSeekBarChangeListener() {
 
 		@Override
 		public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-			
 			discountAmount = (discountSeekBar.getProgress()) * .01;
-			
 			discountAmountET.setText(String.format("%.02f", discountAmount));
-			
 			updateDiscountAndFinalPrice();
-	
-			
+				
 		}
 
 		@Override
-		public void onStartTrackingTouch(SeekBar arg0) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void onStartTrackingTouch(SeekBar arg0) {}
 
 		@Override
-		public void onStopTrackingTouch(SeekBar arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		
+		public void onStopTrackingTouch(SeekBar arg0) {}		
 	};
 
 	@Override
